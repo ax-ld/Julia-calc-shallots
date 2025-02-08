@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shallots Tax Calc</title>
+  <!-- Open Sans font -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <!-- Material Symbols Outlined (Calculate Icon) -->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=calculate"
+  />
+  <style>
+    :root {
+      --primary-color: #295f33;
+      --background-color: #f5f5f5;
+      --surface-color: #ffffff;
+      --text-color: #333;
+      --border-radius: 8px;
+    }
+    body {
+      font-family: "Open Sans", sans-serif;
+      background-color: var(--background-color);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .calculator {
+      background-color: var(--surface-color);
+      padding: 24px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 90%;
+    }
+    h1 {
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: var(--border-radius);
+      margin-bottom: 16px;
+      font-size: 1rem;
+    }
+    .calculate-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.3s;
+    }
+    .calculate-btn:hover {
+      background-color: #1f4828;
+    }
+    .results {
+      margin-top: 24px;
+    }
+    .result-section {
+      margin-bottom: 16px;
+    }
+    .result-section h2 {
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+      color: var(--primary-color);
+    }
+    .result-section p {
+      margin: 4px 0;
+      color: var(--text-color);
+    }
+    .accuracy {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      text-align: center;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>Shallots Tax Calc</h1>
+    <label for="dailySalary">Daily Salary ($):</label>
+    <input
+      type="number"
+      id="dailySalary"
+      placeholder="Enter your daily salary"
+      min="0"
+      step="0.01"
+    />
+
+    <label for="customDays">Custom Period (Days):</label>
+    <input
+      type="number"
+      id="customDays"
+      placeholder="Enter number of days"
+      min="1"
+      value="7"
+    />
+
+    <button class="calculate-btn" id="calculateBtn">
+      <span class="material-symbols-outlined">calculate</span>
+      Calculate Tax
+    </button>
+
+    <div class="results" id="results">
+      <!-- Results will be displayed here -->
+    </div>
+
+    <div class="accuracy" id="accuracy">
+      <!-- Accuracy statement will be inserted here -->
+    </div>
+  </div>
+
+  <script>
+    // Determine the tax rate based on the daily salary bracket.
+    function getTaxRate(dailySalary) {
+      if (dailySalary <= 100) {
+        return 0;
+      } else if (dailySalary <= 600) {
+        return 0.005;
+      } else if (dailySalary <= 1200) {
+        return 0.025;
+      } else if (dailySalary <= 3000) {
+        return 0.04;
+      } else {
+        return 0.15;
+      }
+    }
+
+    // Calculate gross, tax, and net income for a given period.
+    function calculateTax(dailySalary, days) {
+      const gross = dailySalary * days;
+      const rate = getTaxRate(dailySalary);
+      const tax = gross * rate;
+      const net = gross - tax;
+      return { gross, tax, net, rate };
+    }
+
+    // Format numbers as currency.
+    function formatCurrency(value) {
+      return "$" + value.toFixed(2);
+    }
+
+    // Update the UI with the calculation results.
+    function displayResults() {
+      const dailySalaryInput = document.getElementById("dailySalary");
+      const customDaysInput = document.getElementById("customDays");
+      const resultsDiv = document.getElementById("results");
+
+      const dailySalary = parseFloat(dailySalaryInput.value);
+      if (isNaN(dailySalary) || dailySalary < 0) {
+        resultsDiv.innerHTML =
+          "<p>Please enter a valid daily salary.</p>";
+        return;
+      }
+
+      const customDays = parseInt(customDaysInput.value) || 7;
+
+      // Calculate for various periods:
+      const weekly = calculateTax(dailySalary, 7);
+      const monthly = calculateTax(dailySalary, 30);
+      const yearly = calculateTax(dailySalary, 365);
+      const custom = calculateTax(dailySalary, customDays);
+
+      // Build results HTML.
+      let html = "";
+
+      html += "<div class='result-section'>";
+      html += "<h2>Weekly (7 days)</h2>";
+      html += "<p>Gross Income: " + formatCurrency(weekly.gross) + "</p>";
+      html +=
+        "<p>Tax (" +
+        (weekly.rate * 100).toFixed(2) +
+        "%): " +
+        formatCurrency(weekly.tax) +
+        "</p>";
+      html += "<p>Net Income: " + formatCurrency(weekly.net) + "</p>";
+      html += "</div>";
+
+      html += "<div class='result-section'>";
+      html += "<h2>Monthly (30 days)</h2>";
+      html +=
+        "<p>Gross Income: " + formatCurrency(monthly.gross) + "</p>";
+      html +=
+        "<p>Tax (" +
+        (monthly.rate * 100).toFixed(2) +
+        "%): " +
+        formatCurrency(monthly.tax) +
+        "</p>";
+      html += "<p>Net Income: " + formatCurrency(monthly.net) + "</p>";
+      html += "</div>";
+
+      html += "<div class='result-section'>";
+      html += "<h2>Yearly (365 days)</h2>";
+      html +=
+        "<p>Gross Income: " + formatCurrency(yearly.gross) + "</p>";
+      html +=
+        "<p>Tax (" +
+        (yearly.rate * 100).toFixed(2) +
+        "%): " +
+        formatCurrency(yearly.tax) +
+        "</p>";
+      html += "<p>Net Income: " + formatCurrency(yearly.net) + "</p>";
+      html += "</div>";
+
+      html += "<div class='result-section'>";
+      html +=
+        "<h2>Custom Period (" + customDays + " days)</h2>";
+      html +=
+        "<p>Gross Income: " + formatCurrency(custom.gross) + "</p>";
+      html +=
+        "<p>Tax (" +
+        (custom.rate * 100).toFixed(2) +
+        "%): " +
+        formatCurrency(custom.tax) +
+        "</p>";
+      html +=
+        "<p>Net Income: " + formatCurrency(custom.net) + "</p>";
+      html += "</div>";
+
+      resultsDiv.innerHTML = html;
+    }
+
+    document
+      .getElementById("calculateBtn")
+      .addEventListener("click", displayResults);
+
+    // Display the accuracy statement using the current date.
+    document.getElementById("accuracy").textContent =
+      "This calculator is accurate as of " +
+      new Date().toLocaleDateString() +
+      ".";
+  </script>
+</body>
+</html>
